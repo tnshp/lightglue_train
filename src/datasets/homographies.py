@@ -3,7 +3,7 @@ import random
 import torch 
 from torch.utils.data import Dataset, DataLoader
 
-from .spacenet import SpaceNet
+from .spacenet_1 import SpaceNet
 
 def knn(p1, p2, k = 2):
     distances = torch.cdist(p1, p2, p=2)  # Shape (n, m)
@@ -16,11 +16,12 @@ class Homography(Dataset):  #Datset object to augment the raw images
         
     def __len__():
         return len(SpaceNet)
-    
+     
     def __getitem__(self, idx):
         images = self.dataset[idx]
         img1, img2 = random.sample(images, 2)
-        homography = []         ###
+        homography = []         
+        ###
 
         return {'img1': img1, 'img2': img2, 'homography': homography}  #homograhy:  1 -> 2
 
