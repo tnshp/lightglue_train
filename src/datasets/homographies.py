@@ -1,25 +1,38 @@
 import os 
 import random 
+from omegaconf import OmegaConf
 import torch 
 from torch.utils.data import Dataset, DataLoader
+ 
+from .spacenet import SpaceNet7Dataset
 
-from .spacenet_1 import SpaceNet
+#to do:
+#   OmegaConf
 
-def knn(p1, p2, k = 2):
-    distances = torch.cdist(p1, p2, p=2)  # Shape (n, m)
-    knn_distances, knn_indices = torch.topk(distances, k, dim=1, largest=False)
-    return knn_distances, knn_indices
+def knn(p1, p2, k = 2):  
+    #p1 -> b x m x 2 , p2 -> b x n x 2 
+    distances = torch.cdist(p1, p2)  # -> b x m x n 
+
+    min_indices = torch.argmin(distances, dim=2)  #_-> b x m
+    min_distances = torch.min(distances, dim=2)  #_-> b x m
+
+    return min_indices, min_distances
 
 class Homography(Dataset):  #Datset object to augment the raw images
-    def __init__(self, root_dir, train= True, no_udm=True, transform = None):
-        self.dataset  = SpaceNet(root_dir, train=train, no_udm=no_udm, transform=transform)
-        
-    def __len__():
-        return len(SpaceNet)
+    img_size = [400, 400]   
+    max_descriptors = 2048
+    max_overlapp = 0.5
+
+    def __init__(self, root_dir, train= True, no_udm=True, transform = None, max_descriptors = 2048):
+        self.dataset  = SpaceNet7Dataset(root_dir, train=train, no_udm=no_udm, transform=transform)
+        self.max_descriptors = max_descriptors
+
+    def __len__(self):
+        return len(self.dataset)
      
     def __getitem__(self, idx):
         images = self.dataset[idx]
-        img1, img2 = random.sample(images, 2)
+        img1, img2 = images[0], images[1]
         homography = []         
         ###
 
@@ -37,18 +50,18 @@ class CustomLoader(DataLoader):
                 {img1, img2, keypoints0 , keypoints1, descriptors1, descriptors2, gt_assingment}
         '''
         img1, img2, homographies = zip(*data)
-        feats0 = self.descriptor({'image': img1})   #m points
-        feats1 = self.descriptor({'image': img2})   #n points
+        feats0 = self.descriptor({'image': img1})   # m points
+        feats1 = self.descriptor({'image': img2})   # n points
 
         transformed_kp = torch.bmm(feats0['keypoints'], homographies)
-        distances = torch.cdist(transformed_kp, feats1['keypoints'] )  # -> b x m x n 
 
-        min_indices = torch.argmin(distances, dim=2)  #_-> b x m
-    
-        gt_assingment = torch.zeros_like(distances)
+        min_indices, min_dist = knn(transformed_kp, feats1['keypoints']) # -> b x m 
+
+        #add threshsolding 
+        gt_assingment = torch.zeros((self.batch_size, self.dataset.max_descriptors, self.dataset.max_descriptors))
         
         # Set the minimum distance index in each row of each batch to 1
-        batch_indices = torch.arange(gt_assingment.size(0)).unsqueeze(-1)  # Shape (batch_size, 1)
+        batch_indices = torch.arange(gt_assingment.size(0)).unsqueeze(-1)  # Shape (b, 1)
         row_indices = torch.arange(gt_assingment.size(1)).unsqueeze(0)  # Shape (1, m)
         gt_assingment[batch_indices, row_indices, min_indices] = 1
 
@@ -57,13 +70,23 @@ class CustomLoader(DataLoader):
             "keypoints1": feats1['keypoints'], 
             "descriptors0": feats0['descriptors'], 
             "descriptors1": feats1['descriptors'],
-            "view0": {"images_size" : [400, 800]},    #need to change
-            "view1": {"images_size" : [400, 800]},
+            "view0": {"images_size" : self.dataset.img_size},    
+            "view1": {"images_size" : self.dataset.img_size},
             "gt_assingment":  gt_assingment
         }
 
-        return batch 
+        return batch
         
-        
+if __name__ == '__main__':
+    import matplotlib.pyplot as plt
+    from torchvision import transforms
 
-    
+    root_dir = "data/SpaceNet"
+    transform = transforms.Compose([
+
+        transforms.Resize((256, 256)),
+        transforms.ToTensor()
+    ])
+
+    dataset = Homography(root_dir, transform=transform)
+    dataloader =  CustomLoader(dataset,)
