@@ -46,8 +46,7 @@ import torch
 from kornia.color import rgb_to_grayscale
 from torch import nn
 
-from .utils import Extractor
-
+from .utils import Extractor, pad_and_stack
 
 def simple_nms(scores, nms_radius: int):
     """Fast Non-maximum suppression to remove nearby points"""
@@ -149,7 +148,7 @@ class SuperPoint(Extractor):
 
     def forward(self, data: dict) -> dict:
         """Compute keypoints, scores, descriptors for image"""
-        for key in self.required_data_keys:
+        for key in self.required_data_keys: 
             assert key in data, f"Missing key {key} in data"
         image = data["image"]
         if image.shape[1] == 3:
@@ -208,7 +207,19 @@ class SuperPoint(Extractor):
 
         # Convert (h, w) to (x, y)
         keypoints = [torch.flip(k, [1]).float() for k in keypoints]
-
+        keypoints =  pad_and_stack(
+                keypoints,
+                self.conf.max_num_keypoints,
+                -2,
+                mode="random_c",  
+            )
+        scores = pad_and_stack(
+                scores,
+                self.conf.max_num_keypoints,
+                -1,
+                mode="zeros",  
+            )
+        
         # Compute the dense descriptors
         cDa = self.relu(self.convDa(x))
         descriptors = self.convDb(cDa)
@@ -219,9 +230,9 @@ class SuperPoint(Extractor):
             sample_descriptors(k[None], d[None], 8)[0]
             for k, d in zip(keypoints, descriptors)
         ]
-
+        descriptors = torch.stack(descriptors)
         return {
-            "keypoints": torch.stack(keypoints, 0),
-            "keypoint_scores": torch.stack(scores, 0),
-            "descriptors": torch.stack(descriptors, 0).transpose(-1, -2).contiguous(),
+            "keypoints":keypoints,
+            "keypoint_scores": scores,
+            "descriptors":descriptors.transpose(-1, -2).contiguous(),
         }
