@@ -116,8 +116,9 @@ class Homography(Dataset):  #Datset object to augment the raw images
             t = self.conf.translate_range[0] + (self.conf.translate_range[1] - self.conf.translate_range[0]) * np.random.rand(2)
             t = t * np.where(np.random.rand(2) > 0.5, 1, -1)
             t = t * size1
+            t = t.astype(int)
             c2 = c1 + t  
-            c2 = c2.astype(int)
+            # c2 = c2.astype(int)
             
             #check if in range of map
             high = np.array(self.conf.map_size)  
@@ -132,7 +133,7 @@ class Homography(Dataset):  #Datset object to augment the raw images
         S = torch.tensor([[2,0,0],[0,2,0], [0,0,1]]).float() if size1[0] >  size2[0] else torch.eye(3) 
 
         #add rotation
-        H = torch.mm(T, S)    
+        H = torch.mm(S, T)    
 
         #crop and resize
         resize = transforms.Resize(self.conf.img_resize)

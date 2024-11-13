@@ -9363,3 +9363,8 @@ src/lightglue/__pycache__/superpoint.cpython-311.pyc
 src/lightglue/__pycache__/utils.cpython-311.pyc
 src/lightglue/__pycache__/viz2d.cpython-311.pyc
 src/lightning/__pycache__/pl_lightglue.cpython-311.pyc
+src/__pycache__/__init__.cpython-311.pyc
+src/datasets/__pycache__/homographies.cpython-311.pyc
+src/datasets/__pycache__/spacenet.cpython-311.pyc
+tasks.txt
+src/viz/__pycache__/utils.cpython-311.pyc
