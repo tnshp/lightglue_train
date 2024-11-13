@@ -186,6 +186,7 @@ class SuperPoint(Extractor):
 
         # Extract keypoints
         best_kp = torch.where(scores > self.conf.detection_threshold)
+        # _, best_kp = torch.topk(scores, self.conf.max_num_keypoints, largest=True)
         scores = scores[best_kp]
 
         # Separate into batches
@@ -207,6 +208,7 @@ class SuperPoint(Extractor):
 
         # Convert (h, w) to (x, y)
         keypoints = [torch.flip(k, [1]).float() for k in keypoints]
+
         keypoints =  pad_and_stack(
                 keypoints,
                 self.conf.max_num_keypoints,
