@@ -19,23 +19,15 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 batch_size = 4
 
-dataset = Homography(root_dir, transform=transform)
+dataset = Homography(root_dir, transform=transform, train=False)
 descriptor = SuperPoint(max_num_keypoints=512).eval()
 dataloader =  CustomLoader(dataset, descriptor, batch_size=batch_size)
 
 batch = next(iter(dataloader))
 
-print(batch['descriptors0'].shape)
-print(batch['gt_matches0'].shape)
-print(batch['img0'].shape, batch['img1'].shape,)
-print(batch['gt_assingment'][0])
+print(batch['gt_assignment'])
+# print(torch.where(batch['gt_assignment'] == 1))
 
-print(batch['gt_assingment'][0].sum())
-print(batch['gt_matches1'][0])
-
-print(batch['gt_matches0'])
-# plt.imshow(batch['img0'][0].permute(1, 2, 0).numpy()[0:100])
-# plt.show()
 
 for i in range(0, batch_size):
     gt_matches0 = batch['gt_matches0'][i]
@@ -53,21 +45,21 @@ for i in range(0, batch_size):
     viz2d.plot_matches(m_kpts0, m_kpts1, lw=0.2)
 
     plt.show()
-    plt.clf()
+    # plt.clf()
 
-    H = batch['T'][i]
-    t = torch.tensor([H[0,2], H[1,2]])
+    # H = batch['T'][i]
+    # t = torch.tensor([H[0,2], H[1,2]])
 
-    print(t)
+    # print(t)
 
-    m_kpts0 = m_kpts0[:, [1,0]]
-    m_kpts1 = m_kpts1[:, [1,0]]
-    m_kpts0 = kpt0[mask,:] + t
+    # m_kpts0 = m_kpts0[:, [1,0]]
+    # m_kpts1 = m_kpts1[:, [1,0]]
+    # m_kpts0 = kpt0[mask,:] + t
 
-    plt.scatter(m_kpts0[:,0], m_kpts0[:,1])
-    plt.scatter(m_kpts1[:,0], m_kpts1[:,1])
+    # plt.scatter(m_kpts0[:,0], m_kpts0[:,1])
+    # plt.scatter(m_kpts1[:,0], m_kpts1[:,1])
 
-    plt.show()
+    # plt.show()
 
 
 

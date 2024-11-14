@@ -40,10 +40,10 @@ def crop_patch(image, center, size):
 
 def create_assignment_matrix(min_indices):
     batch_size, m = min_indices.shape
-    n = m  # Since m == n == 2048
-    assignment_matrix_batch = torch.full((batch_size, m, n), -1, dtype=torch.int32)
+    n = m  
+    assignment_matrix_batch = torch.full((batch_size, m, n), 0, dtype=torch.int32)
 
-    valid_matches = (min_indices != -1)
+    valid_matches = (min_indices != -1) 
 
     # Using advanced indexing to set matches
     row_indices = torch.arange(batch_size).unsqueeze(1)  # Shape (batch_size, 1) for broadcasting
@@ -137,7 +137,6 @@ class Homography(Dataset):  #Datset object to augment the raw images
 
         #crop and resize
         resize = transforms.Resize(self.conf.img_resize)
-        print('size1: ', size1)
         img0 = crop_patch(img0, c1, size1)
         img0 = resize(img0.unsqueeze(0)).squeeze(0)
         
@@ -176,9 +175,8 @@ class CustomLoader(DataLoader):
         #remove out of bounds points
         min_indices[min_dist > self.dataset.conf.dist_threshold] = -1 
 
-        gt_assingment = create_assignment_matrix(min_indices)
-        gt_matches1 =  get_assignment_array_from_matrix(gt_assingment)
-
+        gt_assignment = create_assignment_matrix(min_indices)
+        gt_matches1 =  get_assignment_array_from_matrix(gt_assignment)
 
         batch = {
             "img0": img0,
@@ -191,7 +189,7 @@ class CustomLoader(DataLoader):
             "view1": {"images_size" : self.dataset.conf.img_resize},
             'gt_matches0': min_indices,
             "gt_matches1": gt_matches1,
-            "gt_assingment":  gt_assingment,
+            "gt_assignment":  gt_assignment,
             "T": data['T']
         }
 

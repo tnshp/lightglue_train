@@ -9368,3 +9368,10 @@ src/datasets/__pycache__/homographies.cpython-311.pyc
 src/datasets/__pycache__/spacenet.cpython-311.pyc
 tasks.txt
 src/viz/__pycache__/utils.cpython-311.pyc
+lightning_logs/version_0/events.out.tfevents.1731571905.LAPTOP-A40N01RN.29164.0
+lightning_logs/version_0/hparams.yaml
+lightning_logs/version_0/checkpoints/epoch=4-step=55.ckpt
+lightning_logs/version_1/events.out.tfevents.1731573967.LAPTOP-A40N01RN.7072.0
+lightning_logs/version_1/hparams.yaml
+lightning_logs/version_1/checkpoints/epoch=4-step=55.ckpt
+src/utils/__pycache__/losses.cpython-311.pyc

@@ -11,6 +11,7 @@ class SpaceNet7Dataset(Dataset):
         if train:
             self.image_dir = os.path.join(root_dir, 'SN7_buildings_train', 'train')
         else:
+            
             self.image_dir = os.path.join(root_dir, 'SN7_buildings_test_public', 'test_public')
         self.sample_size = sample_size
         self.transform = transform
@@ -18,7 +19,7 @@ class SpaceNet7Dataset(Dataset):
         
         # Go through each sub-folder in the root directory
         for folder in os.listdir(self.image_dir):
-            folder_path = os.path.join(self.image_dir, folder, "images")
+            folder_path = os.path.join(self.image_dir, folder, "images" if train else "images_masked")
             if os.path.isdir(folder_path):
                 # Collect image paths in the "images" folder of the current location
                 image_files = sorted(os.listdir(folder_path))
@@ -58,7 +59,8 @@ if __name__ == '__main__':
         transforms.ToTensor()
     ])
 
-    dataset = SpaceNet7Dataset(root_dir=root_dir, train=True,transform=transform)
+    dataset = SpaceNet7Dataset(root_dir=root_dir, train=False,transform=transform)
+    print(len(dataset))
     images = dataset[0]
 
     print(images.shape)

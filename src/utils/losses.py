@@ -70,4 +70,5 @@ class NLLLoss(nn.Module):
 
         weights[:, :m, -1] = neg0
         weights[:, -1, :n] = neg1
+        
         return weights
