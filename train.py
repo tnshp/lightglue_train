@@ -1,5 +1,6 @@
 import lightning as L
 import torch
+import argparse
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -9,6 +10,16 @@ from torchvision import transforms
 from src.lightglue.superpoint import SuperPoint
 from src.lightning.pl_lightglue import PL_lightglue
 from src.datasets.homographies import Homography, CustomLoader
+
+parser = argparse.ArgumentParser(description="lightglue training script")
+
+# Add arguments
+parser.add_argument('--max_epochs', type=int, default=16)
+parser.add_argument('--batch_size', type=int, default=16)
+
+# Parse the arguments
+args = parser.parse_args()
+
 
 root_dir = "data/SpaceNet"
 transform = transforms.Compose([
@@ -31,20 +42,18 @@ config = {
     } 
 
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-batch_size = 4
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 train_set = Homography(root_dir, transform=transform)
 test_set = Homography(root_dir, transform=transform, train=False)
 
 descriptor = SuperPoint(max_num_keypoints=512).eval()
 
-train_loader =  CustomLoader(train_set, descriptor, batch_size=batch_size)
-test_loader =  CustomLoader(test_set, descriptor, batch_size=batch_size)
+train_loader =  CustomLoader(train_set, descriptor, batch_size=args.batch_size)
+test_loader =  CustomLoader(test_set, descriptor, batch_size=args.batch_size)
 
 matcher = PL_lightglue(config=config)
-trainer = L.Trainer(limit_train_batches=100, max_epochs=5, accelerator='cuda')
+trainer = L.Trainer(limit_train_batches=100, max_epochs=args.max_epochs, accelerator=device)
 trainer.fit(model=matcher, train_dataloaders=train_loader)
 
 # trainer.test(model=matcher, dataloaders=test_loader) 

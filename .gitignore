@@ -9375,3 +9375,6 @@ lightning_logs/version_1/events.out.tfevents.1731573967.LAPTOP-A40N01RN.7072.0
 lightning_logs/version_1/hparams.yaml
 lightning_logs/version_1/checkpoints/epoch=4-step=55.ckpt
 src/utils/__pycache__/losses.cpython-311.pyc
+lightning_logs/version_2/events.out.tfevents.1731684009.LAPTOP-A40N01RN.37168.0
+lightning_logs/version_2/hparams.yaml
+lightning_logs/version_2/checkpoints/epoch=1-step=22.ckpt
